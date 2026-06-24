@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libgles2 \
     libegl1 \
+    libegl-mesa0 \
+    libgbm1 \
     libsm6 \
     libxext6 \
     gcc \
