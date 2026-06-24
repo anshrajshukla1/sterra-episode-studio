@@ -288,6 +288,23 @@ def _inspect_streams(session) -> dict:
     except Exception as exc:
         logger.debug("session.stream_info() failed: %s", exc)
 
+    # Fallback for SDKs missing stream_info
+    if "rgb" not in info:
+        try:
+            fc = getattr(session, "num_rgb_frames", getattr(session, "frame_count", 0))
+            if int(fc() if callable(fc) else fc) > 0:
+                info["rgb"] = True
+        except Exception:
+            pass
+
+    if "depth" not in info:
+        try:
+            dc = getattr(session, "num_depth_frames", 0)
+            if int(dc() if callable(dc) else dc) > 0:
+                info["depth"] = True
+        except Exception:
+            pass
+
     # Frame count
     try:
         fc = getattr(session, "frame_count", 0)
