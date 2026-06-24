@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from 'firebase/auth'
+import { getAuth, signOut, onAuthStateChanged, GoogleAuthProvider, OAuthProvider, signInWithPopup } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 
 const firebaseConfig = {
@@ -25,6 +25,7 @@ export async function getIdToken(): Promise<string | null> {
 }
 
 export const googleProvider = new GoogleAuthProvider()
+export const appleProvider = new OAuthProvider('apple.com')
 
 export { 
   signInWithEmailAndPassword, 
