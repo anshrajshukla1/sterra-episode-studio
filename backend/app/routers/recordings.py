@@ -127,8 +127,14 @@ async def list_recordings(
     from app.config import settings
 
     recordings = await _scan_and_upsert(db, settings.recordings_dir)
+    items = []
+    for r in recordings:
+        item = RecordingListItem.model_validate(r)
+        item.latest_job_id = r.latest_job_id
+        items.append(item)
+        
     return RecordingListResponse(
-        items=recordings,  # type: ignore[arg-type]
+        items=items,
         total=len(recordings),
     )
 
@@ -160,4 +166,6 @@ async def get_recording(
             detail=f"Recording '{recording_id}' not found",
         )
 
-    return RecordingResponse.model_validate(recording)
+    resp = RecordingResponse.model_validate(recording)
+    resp.latest_job_id = recording.latest_job_id
+    return resp
