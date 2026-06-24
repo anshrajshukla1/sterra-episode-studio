@@ -19,9 +19,9 @@ export default function App() {
 
       <Route path="/app" element={<ProtectedRoute />}>
         <Route index element={<RecordingList />} />
-        <Route path="recordings/:id" element={<RecordingDetail />} />
-        <Route path="jobs/:id" element={<JobView />} />
-        <Route path="results/:id" element={<ResultView />} />
+        <Route path="recordings/:recordingId" element={<RecordingDetail />} />
+        <Route path="jobs/:jobId" element={<JobView />} />
+        <Route path="results/:jobId" element={<ResultView />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
