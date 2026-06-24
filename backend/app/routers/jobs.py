@@ -29,7 +29,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import get_current_user
+from app.auth import get_current_user, get_user_from_query
 from app.config import settings
 from app.database import get_db
 from app.models import Job, Recording
@@ -159,7 +159,7 @@ async def stream_job_logs(
     job_id: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    _user: dict = Depends(get_current_user),
+    _user: dict = Depends(get_user_from_query),
 ) -> StreamingResponse:
     """
     SSE endpoint — streams live log lines from the job's log queue.

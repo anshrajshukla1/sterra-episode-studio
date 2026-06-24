@@ -28,7 +28,6 @@ export const googleProvider = new GoogleAuthProvider()
 export const appleProvider = new OAuthProvider('apple.com')
 
 export { 
-  signInWithEmailAndPassword, 
   signInWithPopup, 
   signOut, 
   onAuthStateChanged 
