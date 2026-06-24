@@ -186,6 +186,18 @@ async def get_current_user(
         )
     return await verify_firebase_token(credentials.credentials)
 
+async def get_user_from_query(token: str | None = None) -> dict[str, Any]:
+    """
+    FastAPI dependency: require a valid Firebase ID token from the query string.
+    Used for <iframe> and <video> tags that cannot send Authorization headers.
+    """
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing 'token' query parameter",
+        )
+    return await verify_firebase_token(token)
+
 
 async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Security(security),

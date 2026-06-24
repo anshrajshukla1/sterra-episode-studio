@@ -25,7 +25,7 @@ from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import get_current_user
+from app.auth import get_user_from_query
 from app.database import get_db
 from app.models import Result
 
@@ -78,7 +78,7 @@ def _find_mp4_in_dir(episode_path: str) -> str | None:
 async def serve_episode_video(
     job_id: str,
     db: AsyncSession = Depends(get_db),
-    _user: dict = Depends(get_current_user),  # Auth enforced here — never remove
+    _user: dict = Depends(get_user_from_query),  # Auth enforced here
 ) -> FileResponse:
     """
     Stream the exported episode video for the given job.
@@ -131,7 +131,7 @@ async def serve_episode_video(
 async def serve_qc_report(
     job_id: str,
     db: AsyncSession = Depends(get_db),
-    _user: dict = Depends(get_current_user),  # Auth enforced here — never remove
+    _user: dict = Depends(get_user_from_query),  # Auth enforced here
 ) -> FileResponse:
     """
     Serve the QC HTML report for the given job.
