@@ -22,14 +22,23 @@ from app.config import settings
 
 logger = logging.getLogger(__name__)
 
+from sqlalchemy.pool import NullPool
+
 # ── Engine ────────────────────────────────────────────────────────────────────
-engine = create_async_engine(
-    settings.database_url,
-    echo=False,          # Set to True for SQL query logging in development
-    pool_pre_ping=True,  # Reconnect on stale connections (important for Neon)
-    pool_size=5,         # Sensible default for a single-user internal tool
-    max_overflow=10,     # Allow burst headroom
-)
+if settings.database_url.startswith("sqlite"):
+    engine = create_async_engine(
+        settings.database_url,
+        echo=False,
+        poolclass=NullPool,
+    )
+else:
+    engine = create_async_engine(
+        settings.database_url,
+        echo=False,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+    )
 
 # ── Session factory ───────────────────────────────────────────────────────────
 AsyncSessionLocal = async_sessionmaker(
