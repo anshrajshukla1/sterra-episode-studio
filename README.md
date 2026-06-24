@@ -1,153 +1,64 @@
 # Stera Episode Studio
 
-> Internal tool for processing egocentric MCAP recordings through the Stera pipeline.
+A full-stack, asynchronous web application for processing, analyzing, and reviewing raw `.mcap` robotics session recordings.
+
+## Features
+- **Dynamic Background Processing:** Asynchronous job runner implemented in Python using `asyncio` queues, allowing long-running MediaPipe face-blurring models to execute without blocking the main event loop.
+- **Live Streaming Logs:** Real-time terminal log streaming to the frontend using Server-Sent Events (SSE).
+- **Automated Directory Scanning:** The backend automatically watches and indexes any `.mcap` files placed in the data directory.
+- **Firebase Authentication:** Secure Google Sign-in flow with pure-Python JWT cryptographic signature verification on the backend (zero reliance on the heavy Firebase Admin SDK).
+- **Responsive "Liquid Glass" UI:** A custom, premium React frontend built with TailwindCSS and Framer Motion, featuring smooth micro-animations.
 
 ## Architecture
+### Backend (FastAPI)
+- **Framework:** FastAPI (Python 3.11)
+- **Database:** Neon PostgreSQL (using `asyncpg` + async SQLAlchemy) or fallback to local SQLite (`aiosqlite`)
+- **Processing:** `stera-sdk` wrapper implementing a streaming, non-memory-blocking video processing pipeline.
+- **Auth:** `python-jose` for verifying Firebase ID tokens directly against Google's public X.509 certificates.
 
+### Frontend (React + Vite)
+- **Framework:** React 18 (TypeScript) with Vite
+- **Styling:** Vanilla CSS + TailwindCSS (Dark Mode / Glassmorphism)
+- **Routing:** React Router v6
+- **Animations:** Framer Motion
+
+## Prerequisites
+- Docker & Docker Compose
+- Node.js 20+ (for local frontend development)
+- Python 3.11+ (for local backend development)
+
+## Setup & Installation
+
+### 1. Configure Firebase Authentication
+This application requires real Firebase Authentication keys to run. Please create a `.env` file in the **root of the `frontend` directory** (`frontend/.env`) and add the Firebase configuration keys provided by the developer:
+
+```env
+VITE_FIREBASE_API_KEY="<insert_key_here>"
+VITE_FIREBASE_AUTH_DOMAIN="<insert_domain_here>"
+VITE_FIREBASE_PROJECT_ID="<insert_project_id_here>"
+VITE_FIREBASE_STORAGE_BUCKET="<insert_bucket_here>"
+VITE_FIREBASE_MESSAGING_SENDER_ID="<insert_sender_id_here>"
+VITE_FIREBASE_APP_ID="<insert_app_id_here>"
 ```
-frontend/  (React + Vite + TypeScript + Tailwind)  →  Vercel
-backend/   (FastAPI + Python + stera-sdk)           →  Render
-database   (PostgreSQL)                             →  Neon
-auth       (Firebase Auth)                          →  Firebase
-```
 
-## Cold-Clone Setup
+### 2. Add Test Recordings
+To test the pipeline, you can use your own `.mcap` files! Simply copy your files into the `backend/data/recordings` directory. The backend will automatically detect them.
 
-### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- ffmpeg on PATH (required by stera-sdk for export)
-- Docker + Docker Compose (recommended path)
-
-### 1. Clone & configure
+### 3. Run the Application
+Start the entire stack using Docker Compose:
 
 ```bash
-git clone <repo-url>
-cd stera-episode-studio
+docker-compose up --build
 ```
 
-### 2. Backend environment
+- **Frontend UI:** [http://localhost:5173](http://localhost:5173)
+- **Backend API Docs:** [http://localhost:8000/docs](http://localhost:8000/docs)
 
-```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env:
-#   DATABASE_URL        = your Neon postgres connection string (asyncpg format)
-#   RECORDINGS_DIR      = absolute path to the folder with .mcap files
-#   EPISODES_DIR        = absolute path for output episodes
-#   FIREBASE_PROJECT_ID = your Firebase project ID
-```
+*(Note: The first build may take a few minutes as it installs ffmpeg and the necessary Python machine learning dependencies).*
 
-### 3. Frontend environment
-
-```bash
-cp frontend/.env.example frontend/.env
-# Edit frontend/.env with your Firebase web app config
-# VITE_API_URL = http://localhost:8000 (for local dev)
-```
-
-### 4a. Run with Docker (recommended — matches cold-clone behavior)
-
-```bash
-docker compose up --build
-```
-
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- API docs (Swagger): http://localhost:8000/docs
-
-### 4b. Run manually
-
-**Backend:**
-```bash
-cd backend
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 5. Add recordings
-
-Drop `.mcap` files into the directory you set as `RECORDINGS_DIR`. Then click **Refresh** in the UI — the backend scans the directory, validates MCAP magic bytes, and lists them.
-
-## How to use
-
-1. Open http://localhost:5173
-2. Click **Start a Project** to go to the recordings list
-3. Select a recording → click **Process Recording**
-4. Watch live progress in the terminal log
-5. View results: exported video, health score, and interactive QC report
-
-## Running tests
-
-```bash
-cd backend
-pytest -v
-```
-
-## Deployment
-
-### Backend → Render
-
-1. Create a new Web Service in Render
-2. Set root directory to `backend/`
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Add environment variables from `backend/.env`
-6. Mount a persistent disk at `/data` for recordings and episodes
-
-### Frontend → Vercel
-
-1. Import the repo in Vercel
-2. Set root directory to `frontend/`
-3. Add environment variables from `frontend/.env`
-4. Set `VITE_API_URL` to your Render backend URL
-
-### Database → Neon
-
-1. Create a Neon project at https://neon.tech
-2. Copy the connection string in asyncpg format:
-   `postgresql+asyncpg://user:pass@host/dbname`
-3. Set as `DATABASE_URL` in backend `.env`
-4. Tables are created automatically on first startup (`init_db()`)
-
-## Project structure
-
-```
-stera-episode-studio/
-├── backend/
-│   ├── app/
-│   │   ├── main.py          # FastAPI app, CORS, lifespan
-│   │   ├── config.py        # Settings (env vars)
-│   │   ├── database.py      # Async SQLAlchemy + Neon
-│   │   ├── models.py        # ORM: Recording, Job, Result
-│   │   ├── schemas.py       # Pydantic schemas
-│   │   ├── auth.py          # Firebase JWT verification
-│   │   ├── pipeline.py      # stera-sdk wrapper
-│   │   ├── worker.py        # asyncio job queue
-│   │   └── routers/         # API route handlers
-│   ├── tests/
-│   ├── requirements.txt
-│   └── Dockerfile
-├── frontend/
-│   ├── src/
-│   │   ├── pages/           # Hero, Capabilities, RecordingList, JobView, ResultView
-│   │   ├── components/      # FadingVideo, BlurText, Navbar, icons
-│   │   ├── api.ts           # Typed API client
-│   │   └── firebase.ts      # Firebase auth
-│   └── vercel.json
-├── DECISIONS.md
-├── KNOWN_ISSUES.md
-└── docker-compose.yml
-```
+## Pipeline Workflow
+1. Navigate to the frontend and sign in using Google Auth.
+2. The dashboard will list all recordings found in `backend/data/recordings`.
+3. Click **Process Recording** to initiate the pipeline. You will be taken to a live terminal view.
+4. Watch the logs stream in real-time as the backend unpacks the streams, runs MediaPipe Face Detection to blur PII on every RGB frame, and exports the final `rgb.mp4` video.
+5. Once complete, click **View Results** to see the final QC report, health score, and processed video player.

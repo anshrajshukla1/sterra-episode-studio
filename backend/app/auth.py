@@ -178,9 +178,6 @@ async def get_current_user(
         async def route(user: dict = Depends(get_current_user)):
             uid = user["sub"]
     """
-    if settings.firebase_project_id == "dummy-project-id":
-        return {"sub": "dummy", "email": "dev@local"}
-
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
