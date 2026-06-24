@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: stera-episode-studio-api
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    disk:
+      name: stera-data
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: RECORDINGS_DIR
+        value: /data/recordings
+      - key: EPISODES_DIR
+        value: /data/episodes
+      - key: CORS_ORIGINS
+        sync: false  # Set to your Vercel URL
