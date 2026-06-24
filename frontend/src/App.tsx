@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import Hero from './pages/Hero'
 import Login from './pages/Login'
 import RecordingList from './pages/RecordingList'
 import RecordingDetail from './pages/RecordingDetail'
@@ -9,7 +10,11 @@ import ResultView from './pages/ResultView'
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/app" replace />} />
+      <Route path="/" element={
+        <div className="bg-black text-white min-h-screen">
+          <Hero />
+        </div>
+      } />
       <Route path="/login" element={<Login />} />
 
       <Route path="/app" element={<ProtectedRoute />}>
@@ -19,7 +24,7 @@ export default function App() {
         <Route path="results/:id" element={<ResultView />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/app" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
 }

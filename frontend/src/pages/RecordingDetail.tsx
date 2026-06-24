@@ -86,7 +86,12 @@ export default function RecordingDetail() {
               disabled={processing || recording.status === 'processing'}
               className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {processing ? 'Starting...' : recording.status === 'processing' ? 'Processing...' : 'Process Recording'}
+              {processing ? (
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
+                  Starting...
+                </>
+              ) : recording.status === 'processing' ? 'Processing...' : 'Process Recording'}
               {!processing && <ArrowUpRight className="w-4 h-4" />}
             </button>
           )}
