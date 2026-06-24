@@ -33,6 +33,7 @@ A full-stack, asynchronous web application for processing, analyzing, and review
 This application requires real Firebase Authentication keys to run. Please create a `.env` file in the **root of the project** (alongside `docker-compose.yml`) and add the Firebase configuration keys provided by the developer:
 
 ```env
+FIREBASE_PROJECT_ID="<insert_project_id_here>"
 VITE_FIREBASE_API_KEY="<insert_key_here>"
 VITE_FIREBASE_AUTH_DOMAIN="<insert_domain_here>"
 VITE_FIREBASE_PROJECT_ID="<insert_project_id_here>"
