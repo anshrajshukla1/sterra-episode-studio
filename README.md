@@ -30,7 +30,7 @@ A full-stack, asynchronous web application for processing, analyzing, and review
 ## Setup & Installation
 
 ### 1. Configure Firebase Authentication
-This application requires real Firebase Authentication keys to run. Please create a `.env` file in the **root of the `frontend` directory** (`frontend/.env`) and add the Firebase configuration keys provided by the developer:
+This application requires real Firebase Authentication keys to run. Please create a `.env` file in the **root of the project** (alongside `docker-compose.yml`) and add the Firebase configuration keys provided by the developer:
 
 ```env
 VITE_FIREBASE_API_KEY="<insert_key_here>"
