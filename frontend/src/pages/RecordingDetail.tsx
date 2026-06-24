@@ -72,14 +72,28 @@ export default function RecordingDetail() {
           <p className="mt-4 text-red-400 font-body text-sm">{error}</p>
         )}
 
-        <div className="mt-8">
+        <div className="mt-8 flex gap-4">
           {recording.status === 'done' ? (
-            <button
-              onClick={() => navigate('/app')}
-              className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white"
-            >
-              View Results <ArrowUpRight className="w-4 h-4" />
-            </button>
+            <>
+              <button
+                onClick={() => navigate(recording.latest_job_id ? `/app/results/${recording.latest_job_id}` : '/app')}
+                className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white"
+              >
+                View Results <ArrowUpRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleProcess}
+                disabled={processing}
+                className="liquid-glass rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white hover:bg-white/5 transition-colors disabled:opacity-50"
+              >
+                {processing ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
+                    Starting...
+                  </>
+                ) : 'Re-run Pipeline'}
+              </button>
+            </>
           ) : (
             <button
               onClick={handleProcess}

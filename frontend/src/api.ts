@@ -16,6 +16,7 @@ export interface Recording {
   stream_names: string[] | null
   status: 'unprocessed' | 'processing' | 'done' | 'error'
   error_msg: string | null
+  latest_job_id: string | null
   created_at: string
 }
 

@@ -111,6 +111,12 @@ class Recording(Base):
         lazy="selectin",  # Avoid N+1 on list endpoints
     )
 
+    @property
+    def latest_job_id(self) -> str | None:
+        if not self.jobs:
+            return None
+        return sorted(self.jobs, key=lambda j: j.created_at)[-1].id
+
 
 # ── Job ───────────────────────────────────────────────────────────────────────
 

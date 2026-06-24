@@ -193,10 +193,28 @@ async def run_pipeline(
     os.makedirs(episode_path, exist_ok=True)
     emit(f"[export] Exporting episode to {episode_path}…")
     try:
+        class SteraEmitHandler(logging.Handler):
+            def emit_log(self, record):
+                try:
+                    msg = self.format(record)
+                    emit(f"[export] {msg}")
+                except Exception:
+                    pass
+            def emit(self, record):
+                self.emit_log(record)
+
+        handler = SteraEmitHandler()
+        handler.setFormatter(logging.Formatter("%(message)s"))
+        stera_logger = logging.getLogger("stera.data.export")
+        stera_logger.addHandler(handler)
+        stera_logger.setLevel(logging.INFO)
+
         await loop.run_in_executor(
             None,
             lambda: session.export(episode_path),
         )
+        
+        stera_logger.removeHandler(handler)
     except Exception as exc:
         raise PipelineError(f"Export failed: {exc}") from exc
 
@@ -224,7 +242,7 @@ async def run_pipeline(
         candidate_report_path = os.path.join(episode_path, "report.html")
         await loop.run_in_executor(
             None,
-            lambda: report.save(candidate_report_path),
+            lambda: report.export(candidate_report_path) if hasattr(report, "export") else report.save(candidate_report_path),
         )
         report_path = candidate_report_path
         emit(f"[evaluate] QC report saved. Health score: {health_score}")

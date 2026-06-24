@@ -38,6 +38,7 @@ class RecordingResponse(_ORMBase):
     stream_names: list[str] | None = None
     status: str
     error_msg: str | None = None
+    latest_job_id: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -50,6 +51,7 @@ class RecordingListItem(_ORMBase):
     duration_s: float | None = None
     stream_names: list[str] | None = None
     status: str
+    latest_job_id: str | None = None
     created_at: datetime
     updated_at: datetime
 
