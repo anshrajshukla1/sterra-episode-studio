@@ -6,23 +6,8 @@ import { auth, signInWithEmailAndPassword, signInWithPopup, googleProvider } fro
 
 export default function Login() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-      navigate('/app')
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Login failed')
-      setLoading(false)
-    }
-  }
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
@@ -58,47 +43,9 @@ export default function Login() {
           Sign in to access the pipeline
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="liquid-glass rounded-2xl p-1">
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              className="w-full bg-transparent px-4 py-3 text-sm font-body text-white placeholder-white/30 outline-none"
-            />
-          </div>
-
-          <div className="liquid-glass rounded-2xl p-1">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              className="w-full bg-transparent px-4 py-3 text-sm font-body text-white placeholder-white/30 outline-none"
-            />
-          </div>
-
-          {error && (
-            <p className="text-red-400 text-xs font-body text-center">{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="liquid-glass-strong w-full rounded-2xl py-3 text-sm font-body font-medium text-white hover:bg-white/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'Signing in...' : 'Sign In with Email'}
-          </button>
-        </form>
-
-        <div className="my-6 flex items-center justify-center space-x-4">
-          <div className="h-px bg-white/10 flex-1" />
-          <span className="text-xs font-body text-white/40 uppercase tracking-widest">or</span>
-          <div className="h-px bg-white/10 flex-1" />
-        </div>
+        {error && (
+          <p className="text-red-400 text-xs font-body text-center mb-4">{error}</p>
+        )}
 
         <button
           onClick={handleGoogleSignIn}
