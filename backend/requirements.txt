@@ -12,8 +12,8 @@ pytest-asyncio
 cryptography
 pyjwt[crypto]
 python-jose[cryptography]
-
 psycopg2-binary
 aiofiles
+aiosqlite
 python-dotenv
 stera-sdk[all]

@@ -8,10 +8,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_URL=${DATABASE_URL:-sqlite+aiosqlite:///./stera.db}
       - RECORDINGS_DIR=/data/recordings
       - EPISODES_DIR=/data/episodes
-      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-dummy-project-id}
       - CORS_ORIGINS=["http://localhost:5173"]
     volumes:
       - recordings_data:/data/recordings
