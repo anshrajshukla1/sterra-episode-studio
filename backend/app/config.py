@@ -13,7 +13,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # ── Database ─────────────────────────────────────────────────────────────
     # Must be an async-compatible URL: postgresql+asyncpg://...
-    database_url: str
+    database_url: str = "sqlite+aiosqlite:///./stera.db"
 
     # ── File system paths ─────────────────────────────────────────────────────
     # Where uploaded/mounted .mcap recordings live
@@ -23,7 +23,7 @@ class Settings(BaseSettings):
 
     # ── Firebase ──────────────────────────────────────────────────────────────
     # The Firebase project ID is used to validate the `aud` claim on JWTs
-    firebase_project_id: str
+    firebase_project_id: str = "dummy-project-id"
 
     # ── Security ──────────────────────────────────────────────────────────────
     # Internal secret key (not used for Firebase tokens, available for future use)

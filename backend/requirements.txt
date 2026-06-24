@@ -16,3 +16,4 @@ python-jose[cryptography]
 psycopg2-binary
 aiofiles
 python-dotenv
+stera-sdk[all]
