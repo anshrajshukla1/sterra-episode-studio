@@ -14,8 +14,9 @@ services:
       - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID:-dummy-project-id}
       - CORS_ORIGINS=["http://localhost:5173"]
     volumes:
-      - recordings_data:/data/recordings
-      - episodes_data:/data/episodes
+      - ./backend/data/recordings:/data/recordings
+      - ./backend/data/episodes:/data/episodes
+      - ./backend/stera.db:/app/stera.db
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -43,6 +44,3 @@ services:
       - backend
     restart: unless-stopped
 
-volumes:
-  recordings_data:
-  episodes_data:

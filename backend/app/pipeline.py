@@ -274,29 +274,32 @@ def _inspect_streams(session) -> dict:
     Return a dict of stream info plus frame_count and duration_s keys.
 
     Attempts to call the modern stream_info() API and falls back gracefully
-    for older SDK versions that may not expose it.
+    for older SDK versions that may not expose it. Handles both properties and methods.
     """
     info: dict = {}
 
     # Modern SDK: stream_info() returns a dict keyed by stream name
     try:
-        stream_info = session.stream_info()
-        if isinstance(stream_info, dict):
-            info.update(stream_info)
-    except AttributeError:
-        # Older SDK — stream names may be exposed differently; skip gracefully
-        logger.debug("session.stream_info() not available — using legacy fallback")
+        si = getattr(session, "stream_info", None)
+        if si is not None:
+            stream_info = si() if callable(si) else si
+            if isinstance(stream_info, dict):
+                info.update(stream_info)
+    except Exception as exc:
+        logger.debug("session.stream_info() failed: %s", exc)
 
     # Frame count
     try:
-        info["frame_count"] = int(session.frame_count())
-    except AttributeError:
+        fc = getattr(session, "frame_count", 0)
+        info["frame_count"] = int(fc() if callable(fc) else fc)
+    except Exception:
         info["frame_count"] = 0
 
     # Duration in seconds
     try:
-        info["duration_s"] = float(session.duration())
-    except AttributeError:
+        d = getattr(session, "duration", 0.0)
+        info["duration_s"] = float(d() if callable(d) else d)
+    except Exception:
         info["duration_s"] = 0.0
 
     return info
