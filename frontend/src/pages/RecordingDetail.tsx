@@ -79,7 +79,7 @@ export default function RecordingDetail() {
                 onClick={() => navigate(recording.latest_job_id ? `/app/results/${recording.latest_job_id}` : '/app')}
                 className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white"
               >
-                View Results <ArrowUpRight className="w-4 h-4" />
+                View Results <ArrowUpRight className="w-4 h-4" /> {/* Force Vite HMR */}
               </button>
               <button
                 onClick={handleProcess}

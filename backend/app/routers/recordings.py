@@ -30,7 +30,7 @@ from app.auth import get_current_user
 from app.database import get_db
 from app.models import Recording
 from app.pipeline import validate_mcap_file
-from app.schemas import RecordingListResponse, RecordingResponse
+from app.schemas import RecordingListItem, RecordingListResponse, RecordingResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
