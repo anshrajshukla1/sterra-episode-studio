@@ -54,6 +54,42 @@ async def lifespan(app: FastAPI):
 
     await init_db()
 
+    # ── Cleanup orphaned jobs from previous server session ────────────────────
+    # Any job still 'running' or 'queued' after a restart is orphaned — the
+    # asyncio worker died with the process. Reset them so the UI doesn't show
+    # "Processing..." forever and the user can re-trigger the pipeline.
+    try:
+        from sqlalchemy import select as sa_select  # noqa: PLC0415
+        from app.models import Job, Recording  # noqa: PLC0415
+        async with AsyncSessionLocal() as db:
+            # Reset orphaned jobs
+            res = await db.execute(
+                sa_select(Job).where(Job.status.in_(["running", "queued"]))
+            )
+            orphaned_jobs = res.scalars().all()
+            for job in orphaned_jobs:
+                job.status = "failed"
+                job.error_msg = "Server restarted while job was running"
+                logger.warning("Orphaned job %s reset to failed", job.id)
+
+            # Reset recordings whose status is stuck on 'processing'
+            res2 = await db.execute(
+                sa_select(Recording).where(Recording.status == "processing")
+            )
+            stuck_recordings = res2.scalars().all()
+            for rec in stuck_recordings:
+                rec.status = "unprocessed"
+                logger.warning("Stuck recording %s reset to unprocessed", rec.filename)
+
+            if orphaned_jobs or stuck_recordings:
+                await db.commit()
+                logger.info(
+                    "Startup cleanup: %d orphaned jobs, %d stuck recordings reset",
+                    len(orphaned_jobs), len(stuck_recordings)
+                )
+    except Exception as cleanup_exc:
+        logger.exception("Startup cleanup failed (non-fatal): %s", cleanup_exc)
+
     for path in (settings.recordings_dir, settings.episodes_dir):
         os.makedirs(path, exist_ok=True)
         logger.info("Data directory ready: %s", path)
