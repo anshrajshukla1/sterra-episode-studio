@@ -11,12 +11,15 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 }
 
-if (!firebaseConfig.apiKey) {
+export const isFirebaseConfigured = !!firebaseConfig.apiKey
+
+if (!isFirebaseConfigured) {
   console.warn("⚠️ VITE_FIREBASE_API_KEY is not set. Firebase Authentication will fail. Please check your .env file.")
 }
 
-export const app = initializeApp(firebaseConfig)
-export const auth = getAuth(app)
+// Only initialize if configured, to prevent app crashing to a blank white screen
+export const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null as any
+export const auth = isFirebaseConfigured ? getAuth(app) : null as any
 
 export async function getIdToken(): Promise<string | null> {
   const user = auth.currentUser
