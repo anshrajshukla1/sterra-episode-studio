@@ -72,14 +72,14 @@ export default function RecordingDetail() {
           <p className="mt-4 text-red-400 font-body text-sm">{error}</p>
         )}
 
-        <div className="mt-8 flex gap-4">
+        <div className="mt-8 flex flex-wrap gap-4">
           {recording.status === 'done' ? (
             <>
               <button
                 onClick={() => navigate(recording.latest_job_id ? `/app/results/${recording.latest_job_id}` : '/app')}
                 className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white"
               >
-                View Results <ArrowUpRight className="w-4 h-4" /> {/* Force Vite HMR */}
+                View Results <ArrowUpRight className="w-4 h-4" />
               </button>
               <button
                 onClick={handleProcess}
@@ -94,10 +94,27 @@ export default function RecordingDetail() {
                 ) : 'Re-run Pipeline'}
               </button>
             </>
+          ) : recording.status === 'processing' ? (
+            <>
+              {recording.latest_job_id && (
+                <button
+                  onClick={() => navigate(`/app/jobs/${recording.latest_job_id}`)}
+                  className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white"
+                >
+                  View Job Progress <ArrowUpRight className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                disabled
+                className="liquid-glass rounded-full px-6 py-3 text-sm font-body font-medium text-white/40 cursor-not-allowed"
+              >
+                Processing...
+              </button>
+            </>
           ) : (
             <button
               onClick={handleProcess}
-              disabled={processing || recording.status === 'processing'}
+              disabled={processing}
               className="liquid-glass-strong rounded-full px-6 py-3 flex items-center gap-2 text-sm font-body font-medium text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {processing ? (
@@ -105,7 +122,7 @@ export default function RecordingDetail() {
                   <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white/80 animate-spin" />
                   Starting...
                 </>
-              ) : recording.status === 'processing' ? 'Processing...' : 'Process Recording'}
+              ) : recording.status === 'error' ? 'Retry Processing' : 'Process Recording'}
               {!processing && <ArrowUpRight className="w-4 h-4" />}
             </button>
           )}

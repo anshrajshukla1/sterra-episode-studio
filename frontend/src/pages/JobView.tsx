@@ -30,38 +30,50 @@ export default function JobView() {
   useEffect(() => {
     if (!jobId) return
 
-    // Load job info
-    api.getJob(jobId).then(setJob).catch(() => {})
+    // First load job info — if already terminal, skip SSE entirely
+    api.getJob(jobId).then(loadedJob => {
+      setJob(loadedJob)
 
-    // Connect SSE
-    api.createJobStream(jobId).then(es => {
-      esRef.current = es
-      es.onmessage = (e) => {
-        const text: string = e.data
-
-        if (text === '__STREAM_DONE__') {
-          setDone(true)
-          es.close()
-          // Reload job status
-          api.getJob(jobId).then(setJob).catch(() => {})
-          return
-        }
-
-        if (text.startsWith('__RESULT__:')) {
-          return
-        }
-
-        setLogs(prev => [...prev, { text, type: classifyLog(text) }])
-
-        // Parse progress from log lines
-        const match = text.match(/(\d+)%/)
-        if (match) setProgress(parseInt(match[1], 10))
-        if (text.includes('Pipeline complete') || text.includes('[done]')) setProgress(100)
+      if (loadedJob.status === 'done' || loadedJob.status === 'failed') {
+        // Job is already finished — show final state immediately, no SSE needed
+        setDone(true)
+        if (loadedJob.status === 'done') setProgress(100)
+        return
       }
-      es.onerror = () => {
-        setLogs(prev => [...prev, { text: 'Connection lost. Retrying...', type: 'warn' }])
-      }
-    })
+
+      // Job is still running — open SSE stream
+      api.createJobStream(jobId).then(es => {
+        esRef.current = es
+        es.onmessage = (e) => {
+          const text: string = e.data
+
+          if (text === '__STREAM_DONE__') {
+            setDone(true)
+            es.close()
+            api.getJob(jobId).then(setJob).catch(() => {})
+            return
+          }
+
+          if (text.startsWith('__RESULT__:')) {
+            return
+          }
+
+          setLogs(prev => [...prev, { text, type: classifyLog(text) }])
+
+          const match = text.match(/(\d+)%/)
+          if (match) setProgress(parseInt(match[1], 10))
+          if (text.includes('Pipeline complete') || text.includes('[done]')) setProgress(100)
+        }
+        es.onerror = () => {
+          // Only show retry message if not already done
+          setLogs(prev => {
+            const last = prev[prev.length - 1]
+            if (last?.text === 'Connection lost. Retrying...') return prev
+            return [...prev, { text: 'Connection lost. Retrying...', type: 'warn' }]
+          })
+        }
+      })
+    }).catch(() => {})
 
     return () => {
       esRef.current?.close()
@@ -73,10 +85,15 @@ export default function JobView() {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [logs])
 
-  // Auto-navigate to results when done
+  // Auto-navigate to results only when we just transitioned to done (not on back-nav)
+  const autoNavigateRef = useRef(false)
   useEffect(() => {
-    if (done && job?.status === 'done') {
-      setTimeout(() => navigate(`/app/results/${jobId}`), 1500)
+    if (done && job?.status === 'done' && !autoNavigateRef.current) {
+      autoNavigateRef.current = true
+      // Only auto-navigate if there are actual log lines (means we streamed it live)
+      if (logs.length > 0) {
+        setTimeout(() => navigate(`/app/results/${jobId}`), 1500)
+      }
     }
   }, [done, job])
 
@@ -112,7 +129,9 @@ export default function JobView() {
           )}
           <span className="text-sm font-body text-white/70">
             {done
-              ? job?.status === 'done' ? 'Complete — redirecting to results...' : `Failed: ${job?.error_msg}`
+              ? job?.status === 'done'
+                ? (logs.length > 0 ? 'Complete — redirecting to results...' : 'Complete')
+                : `Failed: ${job?.error_msg}`
               : 'Running pipeline...'}
           </span>
         </div>
