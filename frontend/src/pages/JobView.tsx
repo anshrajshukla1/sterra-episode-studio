@@ -120,9 +120,9 @@ export default function JobView() {
         {/* Terminal log */}
         <div className="liquid-glass rounded-2xl p-5 h-[420px] overflow-y-auto terminal-log">
           {logs.map((log, i) => (
-            <div key={i} className={`log-${log.type} py-0.5 flex break-all whitespace-pre-wrap`}>
+            <div key={i} className={`log-${log.type} py-0.5 flex min-w-0`}>
               <span className="text-white/30 select-none mr-2 inline-block w-8 text-right shrink-0">{String(i + 1)} │</span>
-              <span className="flex-1">{log.text}</span>
+              <span className="flex-1 truncate whitespace-nowrap" title={log.text}>{log.text}</span>
             </div>
           ))}
           {!done && (
