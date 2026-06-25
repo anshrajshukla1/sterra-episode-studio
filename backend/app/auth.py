@@ -146,6 +146,7 @@ async def verify_firebase_token(token: str) -> dict[str, Any]:
             },
         )
     except JWTError as exc:
+        logger.error(f"JWT Verification Error: {exc}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Token verification failed: {exc}",
